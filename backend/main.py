@@ -8,7 +8,6 @@ app = FastAPI()
 
 # --- FRED API Key ---
 FRED_API_KEY = os.getenv("FRED_API_KEY", "YOUR_API_KEY")  # Replace or set environment variable
-
 # ---------- DATA MODELS ----------
 class AssetData(BaseModel):
     cash: float
