@@ -1,4 +1,4 @@
 fastapi
 uvicorn
 numpy
-pydantic
+pydantichttpx==0.28.1
