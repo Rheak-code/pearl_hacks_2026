@@ -5,7 +5,7 @@ import httpx
 app = FastAPI()
 
 # ---------- CONFIGURATION ----------
-FRED_API_KEY = "09c8920f5bc61a5c0556789cd088d344"  # <-- replace with your key
+FRED_API_KEY = "fea9fca02094f2ecc01efe7234532b08"  # <-- replace with your key
 
 # ---------- DATA MODELS ----------
 class AssetData(BaseModel):
