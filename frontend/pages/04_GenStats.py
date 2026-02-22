@@ -1,24 +1,33 @@
 import streamlit as st
 import httpx
-import asyncio
 from lib.theme import apply_theme, topbar
 
 apply_theme()
 topbar()
 
-# ---------- API CLIENT ----------
-API_BASE = "http://localhost:8000"
+# ---------- API CONFIG ----------
+API_BASE = "http://127.0.0.1:8000"  # <-- Make sure your FastAPI backend runs on this port
 
-async def call_simulation(assets: dict, liabilities: dict, shock_bps: float):
+# ---------- API CALL ----------
+def call_simulation(assets: dict, liabilities: dict, shock_bps: float):
     payload = {
         "assets": assets,
         "liabilities": liabilities,
         "rateShockBps": shock_bps
     }
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(f"{API_BASE}/simulate_rate_shock", json=payload)
+    try:
+        response = httpx.post(f"{API_BASE}/simulate_rate_shock", json=payload, timeout=30.0)
         response.raise_for_status()
         return response.json()
+    except httpx.ConnectError:
+        st.error("Cannot connect to API. Is FastAPI running on port 8001?")
+        return None
+    except httpx.HTTPStatusError as e:
+        st.error(f"API returned an error: {e.response.status_code} - {e.response.text}")
+        return None
+    except Exception as e:
+        st.error(f"Unexpected error: {e}")
+        return None
 
 # ---------- STREAMLIT UI ----------
 st.title("Rate Shock Simulator")
@@ -47,30 +56,24 @@ shock_bps = st.slider("Rate Shock (bps)", -200, 200, 100, step=25)
 # Run simulation
 if st.button("Run Simulation"):
     with st.spinner("Calling API..."):
-        try:
-            result = asyncio.run(call_simulation(
-                assets={"cash": cash, "bonds": bonds, "equities": equities},
-                liabilities={
-                    "fixed_mortgage": fixed_mortgage,
-                    "variable_debt": variable_debt,
-                    "remaining_years": remaining_years,
-                    "mortgage_rate": mortgage_rate,
-                    "variable_rate": variable_rate
-                },
-                shock_bps=shock_bps
-            ))
-            
-            # Display results
+        result = call_simulation(
+            assets={"cash": cash, "bonds": bonds, "equities": equities},
+            liabilities={
+                "fixed_mortgage": fixed_mortgage,
+                "variable_debt": variable_debt,
+                "remaining_years": remaining_years,
+                "mortgage_rate": mortgage_rate,
+                "variable_rate": variable_rate
+            },
+            shock_bps=shock_bps
+        )
+
+        if result:
             st.success("Simulation complete!")
             col1, col2 = st.columns(2)
             col1.metric("Net Worth Impact", f"${result['netWorthDelta']:,}")
             col2.metric("Monthly Payment Increase", f"${result['newMonthlyPaymentIncrease']:,.2f}")
-            
+
             col1, col2 = st.columns(2)
             col1.metric("Duration Gap", result['durationGap'])
             col2.metric("Risk Level", result['riskClassification'])
-            
-        except httpx.ConnectError:
-            st.error("Cannot connect to API. Is FastAPI running on port 8000?")
-        except Exception as e:
-            st.error(f"Error: {e}")
