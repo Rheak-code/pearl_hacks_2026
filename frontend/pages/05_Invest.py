@@ -4,12 +4,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import streamlit as st
 import httpx
-from lib.ui import require_auth
 from lib.theme import apply_theme, topbar
 
 apply_theme()
 topbar()
-require_auth()
 
 API_BASE = "http://127.0.0.1:8000"  # FastAPI base URL
 

@@ -27,4 +27,5 @@ def sidebar_nav():
 def require_auth():
     if not st.session_state.get("is_authed"):
         st.warning("Please log in to continue.")
+        st.button("Go to Login", on_click=lambda: st.switch_page("pages/02_Login.py"), use_container_width=True)    
         st.stop()

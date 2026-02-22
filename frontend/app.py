@@ -8,14 +8,7 @@ init_state()
 apply_theme()
 topbar()
 
-st.header("Balance your Money. Own your Future.", anchor=None)
-
-st.markdown("<br><br>", unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns([1, 1, 1])
-with col2:
-    if st.button("Login", use_container_width=True, key="login_btn"):
-        st.switch_page("pages/02_Login.py")  # relative to app root
+st.html("<br><br>") # spacing from topbar
 
 st.html(
     """
@@ -30,5 +23,12 @@ st.html(
         </p>
     </div>
     """)
+
+st.html("<br><br>") # spacing from topbar
+
+col1, col2, col3 = st.columns([1, 1, 1])
+with col2:
+    if st.button("Login", use_container_width=True, key="login_btn"):
+        st.switch_page("pages/02_Login.py")  # relative to app root
 
 st.write("")  # landing shell if needed
