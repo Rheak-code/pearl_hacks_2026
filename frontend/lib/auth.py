@@ -1,5 +1,21 @@
 import streamlit as st
 
+def _init_state():
+    if "users" not in st.session_state:
+        # simplest: in-memory dict (resets when app restarts)
+        st.session_state["users"] = {}   # {email: password}
+        
+def signup(email: str, password: str):
+    _init_state()
+    users = st.session_state["users"]
+
+    if email in users:
+        return False, "Email already exists"
+
+    users[email] = password
+    st.session_state["users"] = users  # not strictly required, but explicit
+    return True, "Signed up successfully"
+
 def signup(email: str, password: str) -> tuple[bool, str]:
     users = st.session_state["users"]
     if not email or "@" not in email:

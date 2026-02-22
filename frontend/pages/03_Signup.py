@@ -8,6 +8,9 @@ from lib.auth import signup
 apply_theme()
 topbar()
 
+if "users" not in st.session_state:
+    st.session_state["users"] = {}
+
 st.title("🧾 Signup")
 
 email = st.text_input("Email", placeholder="you@example.com")
