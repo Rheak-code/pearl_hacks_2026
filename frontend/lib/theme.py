@@ -5,7 +5,7 @@ SAND    = "#e8d6a8"   # beige
 LAV     = "#cac8f6"   # lavender
 
 def apply_theme():
-    st.markdown(
+    st.html(
         f"""
         <style>
         /* Google Font */
@@ -83,12 +83,9 @@ def apply_theme():
             border-radius: 999px !important;
             padding: 0.9rem 1.3rem !important;
             font-weight: 600 !important;
-            border: 0 !important;
-            background: {PRIMARY} !important;
+            border: 2px solid white !important;  /* Add visible border */
+            background: {LAV} !important;         /* Or use a contrasting color */
             color: white !important;
-        }}
-        .stButton > button:hover {{
-            filter: brightness(1.05);
         }}
 
         /* Inputs: pill style like your login + personal data page */
@@ -114,12 +111,11 @@ def apply_theme():
         }}
 
         </style>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
 def topbar():
-    st.markdown(
+    st.html(
         f"""
         <div class="mm-topbar">
           <div class="mm-brand">
@@ -128,12 +124,11 @@ def topbar():
             </div>
             <div class="mm-brand-title">MOMENTUM</div>
             <div class="mm-nav">
-              <a href="#">Login</a>
-              <a href="#">About</a>
-              <a href="#">Contact Us</a>
+              <a href="/">Home</a>
+              <a href="#">Contact us</a>
+              <a href="#">FAQ</a>
             </div>
           </div>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )

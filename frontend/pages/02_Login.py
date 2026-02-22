@@ -10,8 +10,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 # Centered beige card
 left, mid, right = st.columns([1, 1.2, 1])
 with mid:
-    st.markdown('<div class="mm-card">', unsafe_allow_html=True)
-    st.markdown('<h1 style="text-align:center; color:#123; font-weight:500;">Log In</h1>', unsafe_allow_html=True)
+    st.html('<div class="mm-card"><h1 style="text-align:center; color:#123; font-weight:800;">Log In</h1></div>')
 
     email = st.text_input("Username", placeholder="Username")
     password = st.text_input("Password", type="password", placeholder="Password")

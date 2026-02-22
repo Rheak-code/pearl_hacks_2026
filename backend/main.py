@@ -11,6 +11,7 @@ FRED_API_KEY = "fea9fca02094f2ecc01efe7234532b08"  # <-- replace with your key
 class AssetData(BaseModel):
     cash: float
     bonds: float
+    
     equities: float
 
 class LiabilityData(BaseModel):
