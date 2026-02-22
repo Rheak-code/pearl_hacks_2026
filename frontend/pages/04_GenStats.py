@@ -1,26 +1,27 @@
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import streamlit as st
 import httpx
 from lib.theme import apply_theme, topbar
+from lib.ui import require_auth
 
 apply_theme()
 topbar()
+require_auth()  # remove this line if you want GenStats accessible without login
 
 # ---------- API CONFIG ----------
-API_BASE = "http://127.0.0.1:8000"  # <-- Make sure your FastAPI backend runs on this port
+API_BASE = "http://127.0.0.1:8000"
 
 # ---------- API CALL ----------
 def call_simulation(assets: dict, liabilities: dict, shock_bps: float):
-    payload = {
-        "assets": assets,
-        "liabilities": liabilities,
-        "rateShockBps": shock_bps
-    }
+    payload = {"assets": assets, "liabilities": liabilities, "rateShockBps": shock_bps}
     try:
-        response = httpx.post(f"{API_BASE}/simulate_rate_shock", json=payload, timeout=30.0)
-        response.raise_for_status()
-        return response.json()
+        r = httpx.post(f"{API_BASE}/simulate_rate_shock", json=payload, timeout=30.0)
+        r.raise_for_status()
+        return r.json()
     except httpx.ConnectError:
-        st.error("Cannot connect to API. Is FastAPI running on port 8001?")
+        st.error(f"Cannot connect to API at {API_BASE}. Is FastAPI running on port 8000?")
         return None
     except httpx.HTTPStatusError as e:
         st.error(f"API returned an error: {e.response.status_code} - {e.response.text}")
@@ -30,50 +31,63 @@ def call_simulation(assets: dict, liabilities: dict, shock_bps: float):
         return None
 
 # ---------- STREAMLIT UI ----------
-st.title("Rate Shock Simulator")
+st.title("📊 General Stats")
+st.caption("Rate Shock Simulator (powered by your FastAPI backend)")
+
+# Defaults from profile if available
+p = st.session_state.get("profile", {})
+default_cash = float(p.get("cash", 50_000.0))
+default_bonds = float(p.get("bonds", 100_000.0))
+default_equities = float(p.get("equities", 150_000.0))
+default_fixed_mortgage = float(p.get("fixed_mortgage", 200_000.0))
+default_variable_debt = float(p.get("variable_debt", 50_000.0))
+default_remaining_years = int(p.get("remaining_years", 25))
+default_mortgage_rate_pct = float(p.get("mortgage_rate_pct", 6.5))
+default_variable_rate_pct = float(p.get("variable_rate_pct", 8.0))
 
 # Assets
 st.subheader("Assets")
-col1, col2, col3 = st.columns(3)
-cash = col1.number_input("Cash", value=50000.0)
-bonds = col2.number_input("Bonds", value=100000.0)
-equities = col3.number_input("Equities", value=150000.0)
+a1, a2, a3 = st.columns(3)
+cash = a1.number_input("Cash ($)", min_value=0.0, value=default_cash, step=1000.0)
+bonds = a2.number_input("Bonds ($)", min_value=0.0, value=default_bonds, step=1000.0)
+equities = a3.number_input("Equities ($)", min_value=0.0, value=default_equities, step=1000.0)
 
 # Liabilities
 st.subheader("Liabilities")
-col1, col2 = st.columns(2)
-fixed_mortgage = col1.number_input("Fixed Mortgage", value=200000.0)
-variable_debt = col2.number_input("Variable Debt", value=50000.0)
+l1, l2 = st.columns(2)
+fixed_mortgage = l1.number_input("Fixed Mortgage ($)", min_value=0.0, value=default_fixed_mortgage, step=1000.0)
+variable_debt = l2.number_input("Variable Debt ($)", min_value=0.0, value=default_variable_debt, step=1000.0)
 
-col1, col2, col3 = st.columns(3)
-remaining_years = col1.number_input("Remaining Years", value=25)
-mortgage_rate = col2.number_input("Mortgage Rate %", value=6.5) / 100
-variable_rate = col3.number_input("Variable Rate %", value=8.0) / 100
+l3, l4, l5 = st.columns(3)
+remaining_years = l3.number_input("Remaining Years", min_value=1, value=default_remaining_years, step=1)
+mortgage_rate = (l4.number_input("Mortgage Rate %", min_value=0.0, value=default_mortgage_rate_pct, step=0.1) / 100.0)
+variable_rate = (l5.number_input("Variable Rate %", min_value=0.0, value=default_variable_rate_pct, step=0.1) / 100.0)
 
 # Shock input
 shock_bps = st.slider("Rate Shock (bps)", -200, 200, 100, step=25)
 
 # Run simulation
-if st.button("Run Simulation"):
+if st.button("Run Simulation", use_container_width=True):
     with st.spinner("Calling API..."):
         result = call_simulation(
-            assets={"cash": cash, "bonds": bonds, "equities": equities},
+            assets={"cash": float(cash), "bonds": float(bonds), "equities": float(equities)},
             liabilities={
-                "fixed_mortgage": fixed_mortgage,
-                "variable_debt": variable_debt,
-                "remaining_years": remaining_years,
-                "mortgage_rate": mortgage_rate,
-                "variable_rate": variable_rate
+                "fixed_mortgage": float(fixed_mortgage),
+                "variable_debt": float(variable_debt),
+                "remaining_years": int(remaining_years),
+                "mortgage_rate": float(mortgage_rate),
+                "variable_rate": float(variable_rate),
             },
-            shock_bps=shock_bps
+            shock_bps=float(shock_bps),
         )
 
-        if result:
-            st.success("Simulation complete!")
-            col1, col2 = st.columns(2)
-            col1.metric("Net Worth Impact", f"${result['netWorthDelta']:,}")
-            col2.metric("Monthly Payment Increase", f"${result['newMonthlyPaymentIncrease']:,.2f}")
+    if result:
+        st.success("Simulation complete!")
 
-            col1, col2 = st.columns(2)
-            col1.metric("Duration Gap", result['durationGap'])
-            col2.metric("Risk Level", result['riskClassification'])
+        c1, c2 = st.columns(2)
+        c1.metric("Net Worth Impact", f"${result['netWorthDelta']:,.2f}")
+        c2.metric("Monthly Payment Increase", f"${result['newMonthlyPaymentIncrease']:,.2f}")
+
+        c3, c4 = st.columns(2)
+        c3.metric("Duration Gap", f"{result['durationGap']}")
+        c4.metric("Risk Level", f"{result['riskClassification']}")

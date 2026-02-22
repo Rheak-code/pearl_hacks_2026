@@ -107,9 +107,15 @@ def apply_theme():
 
         /* Hide sidebar if you want a pure “website” feel */
         section[data-testid="stSidebar"] {{
-            display: none;
-        }}
-
+         display: block !important;
+  visibility: visible !important;
+  width: auto !important;
+}}
+div[data-testid="stSidebarNav"] {{
+  display: block !important;
+  visibility: visible !important;
+}}
+             
         </style>
         """
     )
