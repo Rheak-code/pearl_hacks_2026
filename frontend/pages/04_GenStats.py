@@ -1,6 +1,10 @@
 import streamlit as st
 import httpx
 import asyncio
+from lib.theme import apply_theme, topbar
+
+apply_theme()
+topbar()
 
 # ---------- API CLIENT ----------
 API_BASE = "http://localhost:8000"
