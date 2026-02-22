@@ -1,5 +1,10 @@
 import streamlit as st
 from lib.auth import signup
+import streamlit as st
+from lib.theme import apply_theme, topbar
+
+apply_theme()
+topbar()
 
 st.title("🧾 Signup")
 

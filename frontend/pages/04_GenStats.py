@@ -1,6 +1,10 @@
 import streamlit as st
 from lib.ui import require_auth
+import streamlit as st
+from lib.theme import apply_theme, topbar
 
+apply_theme()
+topbar()
 require_auth()
 
 st.title("📊 General Stats")
